@@ -38,5 +38,7 @@ def create_app():
     app.register_blueprint(movies_blueprint, url_prefix='/movies')
     app.register_blueprint(payment_plan_blueprint, url_prefix='/payment_plan')
     app.register_blueprint(transportation_blueprint, url_prefix='/transportation')
+    app.register_blueprint(shopping_blueprint, url_prefix='/shopping')
+
 
     return app
