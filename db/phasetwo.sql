@@ -157,10 +157,10 @@ CREATE TABLE Restaurants(
 	RestaurantID INT PRIMARY KEY AUTO_INCREMENT UNIQUE,
 	Name TEXT,
 	Reservations INT,
-	CuisineType TEXT,
+	CuisineType TEXT,X
 	PriceTag VARCHAR(5),
 	Location TEXT,
-	ActivityType INT,
+	ActivityTypeID INT,
 	CONSTRAINT fk_16
 	    FOREIGN KEY (ActivityType) REFERENCES Activity(ActivityID)
 	    ON UPDATE CASCADE ON DELETE RESTRICT
@@ -264,6 +264,7 @@ CREATE TABLE ArtsMuseums (
     CollegeStudents INT,
     PriceTag VARCHAR(5),
     OverallRating CHAR(5),
+    Location VARCHAR(255),
     ActivityTypeID INT,
     CONSTRAINT fk_26
 	    FOREIGN KEY (ActivityTypeID) REFERENCES Activity(ActivityID)
