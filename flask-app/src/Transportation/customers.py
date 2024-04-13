@@ -1,59 +1,102 @@
-########################################################
-# Sample customers blueprint of endpoints
-# Remove this file if you are not using it in your project
-########################################################
-from flask import Blueprint, request, jsonify, make_response
-import json
+from flask import Blueprint, request, jsonify
 from src import db
 
+transportation_blueprint = Blueprint('transportation', __name__)
 
-customers = Blueprint('customers', __name__)
+# Create a new transportation record
+@transportation_blueprint.route('/transportation', methods=['POST'])
+def create_transportation():
+    data = request.get_json()
+    try:
+        budget = data['budget']
+        cleanliness_safety = data['cleanliness_safety']
 
-# Update User information for user
-@customers.route('/customers', methods=['PUT'])
-def update_customer():
-    cus_info = request.json
-    cus_id = cus_info['id']
-    first = cus_info['first_name']
-    last = cus_info['last_name']
-    company = cus_info['company']
+        query = '''
+            INSERT INTO Transportation (Budget, CleanlinessSafety) 
+            VALUES (%s, %s)
+        '''
+        conn = db.get_db()
+        cur = conn.cursor()
+        cur.execute(query, (budget, cleanliness_safety))
+        conn.commit()
 
-    query = 'UPDATE customers SET first_name = %s, last_name = %s, company = %s where id = %s'
-    data = (first, last, company, cus_id)
-    cursor = db.get_db().cursor()
-    x = cursor.execute(query, data)
-    db.get_db().commit()
-    return 'Customer info updated.'
+        return jsonify({"message": "Transportation record created successfully.", "id": cur.lastrowid}), 201
+    except KeyError as e:
+        return jsonify({"error": f"Missing field: {e}"}), 400
+    except Exception as e:
+        return jsonify({"error": "An error occurred creating the transportation record."}), 500
 
-# Get all customers from the DB
-@customers.route('/customers', methods=['GET'])
-def get_customers():
-    cursor = db.get_db().cursor()
-    cursor.execute('select id, company, last_name,\
-        first_name, job_title, business_phone from customers')
-    row_headers = [x[0] for x in cursor.description]
-    json_data = []
-    theData = cursor.fetchall()
-    for row in theData:
-        json_data.append(dict(zip(row_headers, row)))
-    the_response = make_response(jsonify(json_data))
-    the_response.status_code = 200
-    the_response.mimetype = 'application/json'
-    return the_response
+# Retrieve all transportation records
+@transportation_blueprint.route('/transportation', methods=['GET'])
+def get_all_transportation():
+    try:
+        conn = db.get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM Transportation')
+        transportation_records = cur.fetchall()
 
-# Get customer detail for customer with particular userID
-@customers.route('/customers/<userID>', methods=['GET'])
-def get_customer(userID):
-    cursor = db.get_db().cursor()
-    cursor.execute('select * from customers where id = {0}'.format(userID))
-    row_headers = [x[0] for x in cursor.description]
-    json_data = []
-    theData = cursor.fetchall()
-    for row in theData:
-        json_data.append(dict(zip(row_headers, row)))
-    the_response = make_response(jsonify(json_data))
-    the_response.status_code = 200
-    the_response.mimetype = 'application/json'
-    return the_response
+        return jsonify(transportation_records), 200
+    except Exception as e:
+        return jsonify({"error": "An error occurred fetching the transportation records."}), 500
 
+# Retrieve a single transportation record by ID
+@transportation_blueprint.route('/transportation/<int:transportation_id>', methods=['GET'])
+def get_transportation(transportation_id):
+    try:
+        conn = db.get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM Transportation WHERE TransportationID = %s', (transportation_id,))
+        transportation_record = cur.fetchone()
 
+        if transportation_record:
+            return jsonify(transportation_record), 200
+        else:
+            return jsonify({"error": "Transportation record not found."}), 404
+    except Exception as e:
+        return jsonify({"error": "An error occurred fetching the transportation record."}), 500
+
+# Update a transportation record
+@transportation_blueprint.route('/transportation/<int:transportation_id>', methods=['PUT'])
+def update_transportation(transportation_id):
+    data = request.get_json()
+    try:
+        budget = data['budget']
+        cleanliness_safety = data['cleanliness_safety']
+
+        query = '''
+            UPDATE Transportation 
+            SET Budget = %s, CleanlinessSafety = %s
+            WHERE TransportationID = %s
+        '''
+        conn = db.get_db()
+        cur = conn.cursor()
+        cur.execute(query, (budget, cleanliness_safety, transportation_id))
+        conn.commit()
+
+        if cur.rowcount == 0:
+            return jsonify({"error": "Transportation record not found."}), 404
+
+        return jsonify({"message": "Transportation record updated successfully."}), 200
+    except KeyError as e:
+        return jsonify({"error": f"Missing field: {e}"}), 400
+    except Exception as e:
+        return jsonify({"error": "An error occurred updating the transportation record."}), 500
+
+# Delete a transportation record
+@transportation_blueprint.route('/transportation/<int:transportation_id>', methods=['DELETE'])
+def delete_transportation(transportation_id):
+    try:
+        conn = db.get_db()
+        cur = conn.cursor()
+        cur.execute('DELETE FROM Transportation WHERE TransportationID = %s', (transportation_id,))
+        conn.commit()
+
+        if cur.rowcount == 0:
+            return jsonify({"error": "Transportation record not found."}), 404
+
+        return jsonify({"message": "Transportation record deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": "An error occurred deleting the transportation record."}), 500
+
+# Don't forget to register this blueprint in the main application file
+# app.register_blueprint(transportation_blueprint, url_prefix='/api')

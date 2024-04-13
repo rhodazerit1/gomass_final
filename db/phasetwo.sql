@@ -257,6 +257,18 @@ CREATE TABLE Outdoor_Activity_Location (
 	    ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
+CREATE TABLE Movies (
+    MovieID INT PRIMARY KEY AUTO_INCREMENT,
+    TheaterLocation VARCHAR(255),
+    Name VARCHAR(255) NOT NULL,
+    OverallRating DECIMAL(3, 1),
+    Genre VARCHAR(255),
+    Activity_Type_ID INT,
+    FOREIGN KEY (Activity_Type_ID) REFERENCES Activity(ActivityID)
+);
+
+
+
 CREATE TABLE ArtsMuseums (
     ArtMuseumID INT PRIMARY KEY AUTO_INCREMENT UNIQUE,
     Name TEXT,
@@ -394,3 +406,10 @@ INSERT INTO ArtsMuseums (PriceTag, Name, ArtType, CollegeStudents, OverallRating
 
 INSERT INTO ArtMuseumsLocation (Location, ArtMuseumID) VALUES ('Cultural District', 1);
 INSERT INTO ArtMuseumsLocation (Location, ArtMuseumID) VALUES ('Old Town', 2);
+
+
+INSERT INTO Movies (TheaterLocation, Name, OverallRating, Genre, Activity_Type_ID) 
+VALUES ('Downtown Cinema', 'Inception', 8.8, 'Science Fiction', 1);
+
+INSERT INTO Movies (TheaterLocation, Name, OverallRating, Genre, Activity_Type_ID) 
+VALUES ('Riverside Theater', 'The Dark Knight', 9.0, 'Action', 2);
